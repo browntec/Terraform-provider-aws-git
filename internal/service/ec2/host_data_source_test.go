@@ -10,12 +10,12 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/acctest"
 )
 
-func TestAccEC2HostDataSource_basic(t *testing.T) {
+func testAccEC2HostDataSource_basic(t *testing.T) {
 	dataSourceName := "data.aws_ec2_host.test"
 	resourceName := "aws_ec2_host.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:   func() { acctest.PreCheck(t) },
 		ErrorCheck: acctest.ErrorCheck(t, ec2.EndpointsID),
 		Providers:  acctest.Providers,
@@ -41,12 +41,12 @@ func TestAccEC2HostDataSource_basic(t *testing.T) {
 	})
 }
 
-func TestAccEC2HostDataSource_filter(t *testing.T) {
+func testAccEC2HostDataSource_filter(t *testing.T) {
 	dataSourceName := "data.aws_ec2_host.test"
 	resourceName := "aws_ec2_host.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:   func() { acctest.PreCheck(t) },
 		ErrorCheck: acctest.ErrorCheck(t, ec2.EndpointsID),
 		Providers:  acctest.Providers,
@@ -76,7 +76,7 @@ func testAccHostDataSourceConfig(rName string) string {
 	return acctest.ConfigCompose(acctest.ConfigAvailableAZsNoOptIn(), fmt.Sprintf(`
 resource "aws_ec2_host" "test" {
   availability_zone = data.aws_availability_zones.available.names[0]
-  instance_type     = "a1.large"
+  instance_type     = "m5.large"
 
   tags = {
     Name = %[1]q
@@ -93,7 +93,7 @@ func testAccHostFilterDataSourceConfig(rName string) string {
 	return acctest.ConfigCompose(acctest.ConfigAvailableAZsNoOptIn(), fmt.Sprintf(`
 resource "aws_ec2_host" "test" {
   availability_zone = data.aws_availability_zones.available.names[0]
-  instance_type     = "a1.large"
+  instance_type     = "m5.large"
 
   tags = {
     %[1]q = "True"

@@ -15,11 +15,38 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/tfresource"
 )
 
-func TestAccEC2Host_basic(t *testing.T) {
+func TestAccEC2Host_serial(t *testing.T) {
+	testCases := map[string]map[string]func(t *testing.T){
+		"Resource": {
+			"basic":          testAccEC2Host_basic,
+			"disappears":     testAccEC2Host_disappears,
+			"instanceFamily": testAccEC2Host_instanceFamily,
+			"tags":           testAccEC2Host_tags,
+		},
+		"DataSource": {
+			"basic":  testAccEC2HostDataSource_basic,
+			"filter": testAccEC2HostDataSource_filter,
+		},
+	}
+
+	for group, m := range testCases {
+		m := m
+		t.Run(group, func(t *testing.T) {
+			for name, tc := range m {
+				tc := tc
+				t.Run(name, func(t *testing.T) {
+					tc(t)
+				})
+			}
+		})
+	}
+}
+
+func testAccEC2Host_basic(t *testing.T) {
 	var host ec2.Host
 	resourceName := "aws_ec2_host.test"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acctest.PreCheck(t) },
 		ErrorCheck:   acctest.ErrorCheck(t, ec2.EndpointsID),
 		Providers:    acctest.Providers,
@@ -33,7 +60,7 @@ func TestAccEC2Host_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "auto_placement", "on"),
 					resource.TestCheckResourceAttr(resourceName, "host_recovery", "off"),
 					resource.TestCheckResourceAttr(resourceName, "instance_family", ""),
-					resource.TestCheckResourceAttr(resourceName, "instance_type", "a1.large"),
+					resource.TestCheckResourceAttr(resourceName, "instance_type", "m5.large"),
 					acctest.CheckResourceAttrAccountID(resourceName, "owner_id"),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
 				),
@@ -47,11 +74,11 @@ func TestAccEC2Host_basic(t *testing.T) {
 	})
 }
 
-func TestAccEC2Host_disappears(t *testing.T) {
+func testAccEC2Host_disappears(t *testing.T) {
 	var host ec2.Host
 	resourceName := "aws_ec2_host.test"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acctest.PreCheck(t) },
 		ErrorCheck:   acctest.ErrorCheck(t, ec2.EndpointsID),
 		Providers:    acctest.Providers,
@@ -69,12 +96,12 @@ func TestAccEC2Host_disappears(t *testing.T) {
 	})
 }
 
-func TestAccEC2Host_instanceFamily(t *testing.T) {
+func testAccEC2Host_instanceFamily(t *testing.T) {
 	var host ec2.Host
 	resourceName := "aws_ec2_host.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acctest.PreCheck(t) },
 		ErrorCheck:   acctest.ErrorCheck(t, ec2.EndpointsID),
 		Providers:    acctest.Providers,
@@ -117,11 +144,11 @@ func TestAccEC2Host_instanceFamily(t *testing.T) {
 	})
 }
 
-func TestAccEC2Host_tags(t *testing.T) {
+func testAccEC2Host_tags(t *testing.T) {
 	var host ec2.Host
 	resourceName := "aws_ec2_host.test"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acctest.PreCheck(t) },
 		ErrorCheck:   acctest.ErrorCheck(t, ec2.EndpointsID),
 		Providers:    acctest.Providers,
@@ -214,7 +241,7 @@ func testAccHostConfig() string {
 	return acctest.ConfigCompose(acctest.ConfigAvailableAZsNoOptIn(), `
 resource "aws_ec2_host" "test" {
   availability_zone = data.aws_availability_zones.available.names[0]
-  instance_type     = "a1.large"
+  instance_type     = "m5.large"
 }
 `)
 }
@@ -253,7 +280,7 @@ func testAccHostTags1Config(tagKey1, tagValue1 string) string {
 	return acctest.ConfigCompose(acctest.ConfigAvailableAZsNoOptIn(), fmt.Sprintf(`
 resource "aws_ec2_host" "test" {
   availability_zone = data.aws_availability_zones.available.names[0]
-  instance_type     = "a1.large"
+  instance_type     = "m5.large"
 
   tags = {
     %[1]q = %[2]q
@@ -266,7 +293,7 @@ func testAccHostTags2Config(tagKey1, tagValue1, tagKey2, tagValue2 string) strin
 	return acctest.ConfigCompose(acctest.ConfigAvailableAZsNoOptIn(), fmt.Sprintf(`
 resource "aws_ec2_host" "test" {
   availability_zone = data.aws_availability_zones.available.names[0]
-  instance_type     = "a1.large"
+  instance_type     = "m5.large"
 
   tags = {
     %[1]q = %[2]q
